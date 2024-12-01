@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  database:
+    container_name: mysql-container
+    image: mysql:8.0.22
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: database-design
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: root
+      TZ: 'Asia/Seoul'
+    ports:
+      - "13306:3306"
+    volumes:
+        - database-data:/var/lib/mysql
+    command:
+      - "mysqld"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    networks:
+      - database-network
+
+  application:
+    container_name: spring-container
+    image: naver0504/database-design:0.0.4
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-container:3306/database-design?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: "root"
+    depends_on:
+      - database
+    networks:
+      - database-network
+volumes:
+  database-data:
+networks:
+  database-network: {}
